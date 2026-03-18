@@ -1,0 +1,6 @@
+google-generativeai
+pydantic>=2.0
+sentence-transformers
+tavily-python
+python-dotenv
+numpy
