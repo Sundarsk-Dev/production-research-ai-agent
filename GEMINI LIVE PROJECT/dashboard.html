@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SENTINEL — Research Agent Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Bebas+Neue&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #07090f;
+        --surface: #0c0f18;
+        --card: #0f1320;
+        --border: #1c2235;
+        --border2: #243050;
+        --green: #00e676;
+        --gdim: rgba(0, 230, 118, 0.08);
+        --amber: #ffab00;
+        --adim: rgba(255, 171, 0, 0.08);
+        --red: #ff3d57;
+        --rdim: rgba(255, 61, 87, 0.08);
+        --blue: #448aff;
+        --text: #b8c8e8;
+        --muted: #3d4f70;
+        --bright: #dde8ff;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "IBM Plex Mono", monospace;
+        min-height: 100vh;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(0, 230, 118, 0.018) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 230, 118, 0.018) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 20px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* HEADER */
+      header {
+        padding: 26px 0 18px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .brand-icon {
+        width: 38px;
+        height: 38px;
+        border: 1px solid var(--green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        animation: glow 3s ease-in-out infinite;
+      }
+      @keyframes glow {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.2);
+        }
+        50% {
+          box-shadow: 0 0 0 5px rgba(0, 230, 118, 0);
+        }
+      }
+      .brand h1 {
+        font-family: "Bebas Neue";
+        font-size: 26px;
+        letter-spacing: 5px;
+        color: var(--bright);
+        line-height: 1;
+      }
+      .brand p {
+        font-size: 8px;
+        letter-spacing: 3px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .live {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 9px;
+        letter-spacing: 2px;
+        color: var(--green);
+        background: var(--gdim);
+        border: 1px solid rgba(0, 230, 118, 0.2);
+        padding: 7px 14px;
+      }
+      .dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: blink 1.4s ease-in-out infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.1;
+        }
+      }
+
+      /* SESSION BAR */
+      .sbar {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+        font-size: 10px;
+      }
+      .sbar label {
+        color: var(--muted);
+        letter-spacing: 2px;
+        white-space: nowrap;
+      }
+      .sbar select {
+        flex: 1;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-family: "IBM Plex Mono";
+        font-size: 10px;
+        padding: 6px 10px;
+        outline: none;
+        cursor: pointer;
+      }
+      .sbar select:focus {
+        border-color: var(--green);
+      }
+      .sbtn {
+        background: var(--gdim);
+        border: 1px solid rgba(0, 230, 118, 0.25);
+        color: var(--green);
+        font-family: "IBM Plex Mono";
+        font-size: 9px;
+        letter-spacing: 2px;
+        padding: 7px 14px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.2s;
+      }
+      .sbtn:hover {
+        background: rgba(0, 230, 118, 0.15);
+      }
+
+      /* STATS */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+      .stat {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-top: 2px solid var(--ac, var(--green));
+        padding: 16px;
+      }
+      .slabel {
+        font-size: 8px;
+        letter-spacing: 3px;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .sval {
+        font-family: "Bebas Neue";
+        font-size: 28px;
+        letter-spacing: 2px;
+        color: var(--ac, var(--green));
+        line-height: 1;
+      }
+      .ssub {
+        font-size: 8px;
+        color: var(--muted);
+        margin-top: 5px;
+      }
+
+      /* GRID */
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      /* PANEL */
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+      }
+      .phead {
+        padding: 11px 16px;
+        border-bottom: 1px solid var(--border);
+        font-size: 8px;
+        letter-spacing: 3px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .phead em {
+        font-style: normal;
+        font-size: 8px;
+        letter-spacing: 1px;
+        color: var(--border2);
+      }
+      .pbody {
+        padding: 14px;
+      }
+
+      /* PHASES */
+      .plist {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .prow {
+        display: grid;
+        grid-template-columns: 26px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 11px;
+        border: 1px solid var(--border);
+        font-size: 10px;
+      }
+      .pnum {
+        font-family: "Bebas Neue";
+        font-size: 18px;
+        color: var(--border2);
+        line-height: 1;
+      }
+      .pname {
+        color: var(--bright);
+        letter-spacing: 1px;
+        font-size: 10px;
+        margin-bottom: 2px;
+      }
+      .pdet {
+        font-size: 9px;
+        color: var(--muted);
+      }
+      .badge {
+        font-size: 8px;
+        letter-spacing: 1px;
+        padding: 3px 7px;
+        white-space: nowrap;
+      }
+      .bg {
+        background: var(--gdim);
+        border: 1px solid rgba(0, 230, 118, 0.25);
+        color: var(--green);
+      }
+      .ba {
+        background: var(--adim);
+        border: 1px solid rgba(255, 171, 0, 0.25);
+        color: var(--amber);
+      }
+      .bb {
+        background: rgba(68, 138, 255, 0.08);
+        border: 1px solid rgba(68, 138, 255, 0.25);
+        color: var(--blue);
+      }
+
+      /* LOG */
+      .log {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        max-height: 250px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
+      .lr {
+        display: grid;
+        grid-template-columns: 52px 88px 1fr;
+        gap: 8px;
+        padding: 5px 6px;
+        font-size: 9px;
+        border-left: 2px solid transparent;
+        overflow: hidden;
+      }
+      .lr.s {
+        border-color: var(--green);
+        background: rgba(0, 230, 118, 0.02);
+      }
+      .lr.w {
+        border-color: var(--amber);
+        background: rgba(255, 171, 0, 0.02);
+      }
+      .lr.e {
+        border-color: var(--red);
+        background: rgba(255, 61, 87, 0.02);
+      }
+      .lr.i {
+        border-color: var(--blue);
+        background: rgba(68, 138, 255, 0.02);
+      }
+      .lt {
+        color: var(--muted);
+      }
+      .lp {
+        color: var(--blue);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .lm {
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* SECURITY */
+      .slist {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .srow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border: 1px solid var(--border);
+        font-size: 10px;
+        border-left: 2px solid var(--green);
+      }
+      .srow.warn {
+        border-left-color: var(--amber);
+      }
+      .si {
+        font-size: 13px;
+        flex-shrink: 0;
+      }
+      .sl {
+        flex: 1;
+        color: var(--text);
+      }
+      .sv {
+        color: var(--muted);
+        font-size: 9px;
+      }
+
+      /* AUDIT */
+      .alist {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .arow {
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-left: 2px solid var(--amber);
+        font-size: 9px;
+      }
+      .at {
+        color: var(--amber);
+        letter-spacing: 1px;
+        margin-bottom: 2px;
+      }
+      .ad {
+        color: var(--muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* REPORT */
+      .rcontent {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 18px;
+        font-size: 10px;
+        line-height: 1.8;
+        color: var(--text);
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 380px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
+      .empty {
+        color: var(--muted);
+        font-size: 10px;
+        padding: 18px;
+        text-align: center;
+        letter-spacing: 1px;
+      }
+
+      /* FOOTER */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 14px 0;
+        display: flex;
+        justify-content: space-between;
+        font-size: 8px;
+        color: var(--muted);
+        letter-spacing: 1px;
+        margin-top: 6px;
+      }
+
+      @media (max-width: 700px) {
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <div class="brand-icon">🛡</div>
+          <div>
+            <h1>SENTINEL</h1>
+            <p>AUTONOMOUS RESEARCH AGENT · PRODUCTION BUILD</p>
+          </div>
+        </div>
+        <div class="live">
+          <div class="dot"></div>
+          CONNECTED
+        </div>
+      </header>
+
+      <div class="sbar">
+        <label>SESSION</label>
+        <select id="sel"></select>
+        <button class="sbtn" onclick="init()">↻ REFRESH</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat" style="--ac: var(--green)">
+          <div class="slabel">STATUS</div>
+          <div class="sval" id="s1">—</div>
+          <div class="ssub" id="s1b">awaiting</div>
+        </div>
+        <div class="stat" style="--ac: var(--blue)">
+          <div class="slabel">EVENTS</div>
+          <div class="sval" id="s2">—</div>
+          <div class="ssub" id="s2b">chain not checked</div>
+        </div>
+        <div class="stat" style="--ac: var(--amber)">
+          <div class="slabel">AUDIT</div>
+          <div class="sval" id="s3">—</div>
+          <div class="ssub">security log entries</div>
+        </div>
+        <div class="stat" style="--ac: var(--green)">
+          <div class="slabel">PHASES</div>
+          <div class="sval" id="s4">—</div>
+          <div class="ssub" id="s4b">no topic</div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <div class="phead">PHASE EXECUTION <em id="phc"></em></div>
+          <div class="pbody">
+            <div class="plist" id="phlist">
+              <div class="empty">Select a session</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="phead">SECURITY STATUS</div>
+          <div class="pbody">
+            <div class="slist" id="seclist">
+              <div class="empty">Select a session</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <div class="phead">EVENT LOG <em id="evc"></em></div>
+          <div class="pbody" style="padding: 10px">
+            <div class="log" id="evlog"><div class="empty">No events</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="phead">AUDIT LOG</div>
+          <div class="pbody">
+            <div class="alist" id="auditlist">
+              <div class="empty">No audit events</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom: 14px">
+        <div class="phead">GENERATED REPORT <em id="rpath"></em></div>
+        <div id="rarea" class="empty">Select a session to load report</div>
+      </div>
+
+      <footer>
+        <span>SENTINEL · AUTONOMOUS RESEARCH AGENT</span>
+        <span>PYTHON 3.11 · GEMINI 2.0 FLASH · SQLITE · SHA-256</span>
+      </footer>
+    </div>
+
+    <script>
+      const API = ""; // same origin — no prefix needed
+
+      async function init() {
+        try {
+          const r = await fetch(`${API}/api/sessions`);
+          const sessions = await r.json();
+          const sel = document.getElementById("sel");
+
+          if (!Array.isArray(sessions) || sessions.length === 0) {
+            sel.innerHTML =
+              "<option>No sessions found — run python run.py first</option>";
+            return;
+          }
+
+          sel.innerHTML = sessions
+            .map((s) => {
+              const short = s.session_id.slice(0, 8);
+              const dt = new Date(s.started).toLocaleString();
+              return `<option value="${s.session_id}">${short}... · ${s.event_count} events · ${dt}</option>`;
+            })
+            .join("");
+
+          // Auto-load first (most recent)
+          await loadSession(sessions[0].session_id);
+
+          // Change handler
+          sel.onchange = () => loadSession(sel.value);
+        } catch (e) {
+          document.getElementById("sel").innerHTML =
+            "<option>API not reachable — is dashboard_api.py running?</option>";
+          console.error(e);
+        }
+      }
+
+      async function loadSession(sid) {
+        if (!sid) return;
+        try {
+          const r = await fetch(`${API}/api/session/${sid}`);
+          const d = await r.json();
+
+          // Stats
+          const term = d.termination || "—";
+          const s1 = document.getElementById("s1");
+          s1.textContent = term === "SUCCESS" ? "OK" : term.slice(0, 7);
+          s1.style.color =
+            term === "SUCCESS"
+              ? "var(--green)"
+              : term === "HALTED"
+                ? "var(--red)"
+                : "var(--amber)";
+          document.getElementById("s1b").textContent = term.toLowerCase();
+          document.getElementById("s2").textContent = d.total_events;
+          const chain = document.getElementById("s2b");
+          chain.textContent = d.chain_integrity
+            ? "✓ chain verified"
+            : "✗ chain broken";
+          chain.style.color = d.chain_integrity ? "var(--green)" : "var(--red)";
+          document.getElementById("s3").textContent = d.audit_events;
+          document.getElementById("s4").textContent = d.phases
+            ? d.phases.length
+            : "—";
+          document.getElementById("s4b").textContent = d.topic
+            ? d.topic.slice(0, 32) + (d.topic.length > 32 ? "…" : "")
+            : "";
+
+          renderPhases(d.phases || []);
+          renderSecurity(d);
+          renderEvents(d.recent_events || []);
+          renderAudit(d.audit_log || []);
+          await loadReport(sid);
+        } catch (e) {
+          console.error("session load:", e);
+        }
+      }
+
+      function renderPhases(phases) {
+        const el = document.getElementById("phlist");
+        const known = phases.filter(
+          (p) => !["init", "final", "memory"].includes(p.phase),
+        );
+        document.getElementById("phc").textContent = known.length + " phases";
+        if (!known.length) {
+          el.innerHTML = '<div class="empty">No phases</div>';
+          return;
+        }
+        el.innerHTML = known
+          .map((p, i) => {
+            const bc =
+              p.status === "success" ? "bg" : p.successes > 0 ? "ba" : "bb";
+            const bs =
+              p.status === "success"
+                ? "SUCCESS"
+                : p.successes > 0
+                  ? "INCONCLUSIVE"
+                  : "RAN";
+            return `<div class="prow">
+      <div class="pnum">${String(i + 1).padStart(2, "0")}</div>
+      <div>
+        <div class="pname">${p.phase.toUpperCase()}</div>
+        <div class="pdet">${p.successes} ok · ${p.errors} err · ${p.events} events</div>
+      </div>
+      <div class="badge ${bc}">${bs}</div>
+    </div>`;
+          })
+          .join("");
+      }
+
+      function renderSecurity(d) {
+        const el = document.getElementById("seclist");
+        const items = [
+          {
+            i: "🔗",
+            l: "Checksum Chain",
+            v: d.chain_integrity ? "VERIFIED" : "BROKEN",
+            ok: d.chain_integrity,
+          },
+          { i: "📋", l: "Plan Integrity", v: "SHA-256", ok: true },
+          { i: "🛡", l: "Injection Sanitizer", v: "ACTIVE", ok: true },
+          { i: "🚧", l: "Phase Permissions", v: "ENFORCED", ok: true },
+          {
+            i: "📝",
+            l: "Audit Events",
+            v: d.audit_events + " logged",
+            ok: d.audit_events === 0,
+          },
+          { i: "🔁", l: "Loop Detector", v: "ARMED", ok: true },
+          { i: "✅", l: "Pydantic Validation", v: "ALL BOUNDARIES", ok: true },
+          { i: "⚡", l: "Break-Glass Auth", v: "CONFIGURED", ok: true },
+        ];
+        el.innerHTML = items
+          .map(
+            (x) =>
+              `<div class="srow ${x.ok ? "" : "warn"}">
+      <div class="si">${x.i}</div>
+      <div class="sl">${x.l}</div>
+      <div class="sv">${x.v}</div>
+    </div>`,
+          )
+          .join("");
+      }
+
+      function renderEvents(events) {
+        const el = document.getElementById("evlog");
+        document.getElementById("evc").textContent = events.length + " recent";
+        if (!events.length) {
+          el.innerHTML = '<div class="empty">No events</div>';
+          return;
+        }
+        el.innerHTML = events
+          .map((e) => {
+            const c =
+              e.event_type.includes("SUCCESS") ||
+              e.event_type.includes("COMPLETE")
+                ? "s"
+                : e.event_type.includes("ERROR")
+                  ? "e"
+                  : e.event_type.includes("LOOP") ||
+                      e.event_type.includes("DEVIATION")
+                    ? "w"
+                    : "i";
+            const t = (e.timestamp || "").slice(11, 19);
+            const p = (e.phase || "").slice(0, 11);
+            const m =
+              e.event_type + " · " + (e.payload_preview || "").slice(0, 70);
+            return `<div class="lr ${c}"><span class="lt">${t}</span><span class="lp">${p}</span><span class="lm">${m}</span></div>`;
+          })
+          .join("");
+        el.scrollTop = el.scrollHeight;
+      }
+
+      function renderAudit(audit) {
+        const el = document.getElementById("auditlist");
+        if (!audit.length) {
+          el.innerHTML =
+            '<div class="empty">No audit events — clean session ✓</div>';
+          return;
+        }
+        el.innerHTML = audit
+          .map(
+            (a) =>
+              `<div class="arow">
+      <div class="at">${a.event_type} · ${(a.timestamp || "").slice(11, 19)}</div>
+      <div class="ad">${a.detail}</div>
+    </div>`,
+          )
+          .join("");
+      }
+
+      async function loadReport(sid) {
+        const area = document.getElementById("rarea");
+        document.getElementById("rpath").textContent = "";
+        try {
+          const r = await fetch(`${API}/api/report/${sid}`);
+          const d = await r.json();
+          if (d.content) {
+            document.getElementById("rpath").textContent = d.path || "";
+            area.className = "rcontent";
+            area.textContent = d.content;
+          } else {
+            area.className = "empty";
+            area.textContent = "No report file for this session yet.";
+          }
+        } catch (e) {
+          area.className = "empty";
+          area.textContent = "Could not load report.";
+        }
+      }
+
+      // Init on load — no aggressive polling
+      window.addEventListener("load", init);
+    </script>
+  </body>
+</html>
